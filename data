@@ -1,0 +1,48 @@
+import pandas as pd
+from datetime import datetime
+import os
+from module1 import func1, func2, URLS
+
+# 데이터 파일 경로
+DATA_PATH = "data/traffic_log.csv"
+os.makedirs("data", exist_ok=True)
+
+# 현재 시간과 요일 반환
+def data_func1():
+    now = datetime.now()
+    time_str = now.strftime("%H:00")
+    day_str = now.strftime("%A")
+    return time_str, day_str
+
+# 모듈1을 통해 실시간 차량 수를 기록하고 평균/최대/최소 통계 반환
+def data_func2(url=URLS["경복궁"], filepath=DATA_PATH):
+    time, day = data_func1()
+    frame = func1(url)
+    if frame is None:
+        print("프레임 수신 실패")
+        return None
+
+    vehicle_count = func2(frame)
+
+    try:
+        df = pd.read_csv(filepath)
+    except FileNotFoundError:
+        
+        print(f"[data_func2] 파일이 없어 새로 생성합니다: {filepath}")
+
+        df = pd.DataFrame(columns=["time", "day", "count"])
+
+    # 기록 추가
+    new_row = {"time": time, "day": day, "count": vehicle_count}
+    df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+
+    df.to_csv(filepath, index=False)
+
+    # 해당 시간/요일 기준 통계 반환
+    filtered = df[(df["time"] == time) & (df["day"] == day)]
+    stats = {
+        "average": filtered["count"].mean(),
+        "max": filtered["count"].max(),
+        "min": filtered["count"].min(),
+    }
+    return stats
