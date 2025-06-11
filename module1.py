@@ -35,10 +35,5 @@ def func2(frame, model=None):
 
     print(f"탐지된 차량 수: {count}")
 
-    # 검증용 이미지 출력
-    result_img = results[0].plot()
-    cv2.imshow("YOLO 결과", result_img)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
 
     return count
